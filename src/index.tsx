@@ -1,8 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import { QueryClient, QueryClientProvider } from "react-query";
 import { ThemeProvider as EmotionThemeProvider } from "@emotion/react";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
 import { defaultTheme } from "czifui";
+
+const queryClient = new QueryClient();
 
 import App from "./main";
 
@@ -13,7 +16,9 @@ ReactDOM.render(
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={defaultTheme}>
         <EmotionThemeProvider theme={defaultTheme}>
-          <App />
+          <QueryClientProvider client={queryClient}>
+            <App />
+          </QueryClientProvider>
         </EmotionThemeProvider>
       </ThemeProvider>
     </StyledEngineProvider>
