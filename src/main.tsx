@@ -1,4 +1,5 @@
 import React from "react";
+import { useQuery } from "react-query";
 import {
   CellBasic,
   CellHeader,
@@ -8,7 +9,8 @@ import {
   CellHeaderDirection,
   CellComponent,
   Tag,
-  Pagination
+  Pagination,
+  Icon,
 } from "czifui";
 import {
   ColumnDef,
@@ -18,24 +20,33 @@ import {
   getPaginationRowModel,
   SortingState,
   useReactTable,
-  PaginationState
+  PaginationState,
 } from "@tanstack/react-table";
-import { makeData, Person } from "./makeData";
-
+import { fetchData, Person, DATA_COUNT } from "./fetchData";
 import "./index.css";
 
 function App() {
-  const DATA_COUNT = 100;
   const PAGE_SIZE = 5;
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const data = React.useState(() => makeData(DATA_COUNT))[0];
 
-  const [{ pageIndex, pageSize }, setPagination] = React.useState<
-    PaginationState
-  >({
-    pageIndex: 0,
-    pageSize: PAGE_SIZE
-  });
+  const [{ pageIndex, pageSize }, setPagination] =
+    React.useState<PaginationState>({
+      pageIndex: 0,
+      pageSize: PAGE_SIZE,
+    });
+
+  const fetchDataOptions = {
+    pageIndex,
+    pageSize,
+  };
+
+  const dataQuery = useQuery(
+    ["data", fetchDataOptions],
+    () => fetchData(fetchDataOptions),
+    { keepPreviousData: true }
+  );
+
+  const defaultData = React.useMemo(() => [], []);
 
   const columns = React.useMemo<ColumnDef<Person>[]>(
     () => [
@@ -44,35 +55,35 @@ function App() {
         id: "firstName",
         cell: (info) => info.getValue(),
         header: "First Name",
-        footer: (props) => props.column.id
+        footer: (props) => props.column.id,
       },
       {
         accessorFn: (row) => row.lastName,
         id: "lastName",
         cell: (info) => info.getValue(),
-        header: "Last Name"
+        header: "Last Name",
       },
       {
         accessorKey: "age",
         header: "Age",
-        footer: (props) => props.column.id
+        footer: (props) => props.column.id,
       },
       {
         accessorKey: "visits",
         header: "Visits",
-        footer: (props) => props.column.id
+        footer: (props) => props.column.id,
       },
       {
         accessorKey: "status",
         id: "status",
         header: "Status",
-        footer: (props) => props.column.id
+        footer: (props) => props.column.id,
       },
       {
         accessorKey: "progress",
         header: "Profile Progress",
-        footer: (props) => props.column.id
-      }
+        footer: (props) => props.column.id,
+      },
     ],
     []
   );
@@ -80,31 +91,35 @@ function App() {
   const pagination = React.useMemo(
     () => ({
       pageIndex,
-      pageSize
+      pageSize,
     }),
     [pageIndex, pageSize]
   );
 
   const table = useReactTable({
-    data,
+    data: dataQuery.data?.rows ?? defaultData,
     columns,
     state: {
       sorting,
-      pagination
+      pagination,
     },
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    debugTable: true
+    manualPagination: true,
+    autoResetAll: false,
+    debugTable: true,
   });
 
   return (
     <div className="app">
-      <h1 className="title">Table with Front-End only Pagination</h1>
+      <h1 className="title">Table with Back-End Pagination</h1>
       <p className="description">
-        Using front-end pagination to show table data in multiple pages.
+        A table with back-end pagination using mocked data received through a
+        query function built with{" "}
+        <Tag label="react-query" color="gray" sdsType="secondary" /> package.
       </p>
       <Table>
         <TableHeader>
@@ -140,7 +155,7 @@ function App() {
                       const tagIndentMap = {
                         single: "beta",
                         relationship: "error",
-                        complicated: "warning"
+                        complicated: "warning",
                       };
                       const tagValue = cell.getValue() as string;
                       return (
@@ -191,6 +206,9 @@ function App() {
           currentPage={table.getState().pagination.pageIndex + 1}
           truncateDropdown
         />
+        {dataQuery.isFetching ? (
+          <Icon sdsIcon="loadingAnimated" sdsSize="l" sdsType="static" />
+        ) : null}
       </div>
     </div>
   );
