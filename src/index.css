@@ -26,3 +26,8 @@ button {
   align-items: center;
   padding: 15px 0;
 }
+
+.table-data-loading small {
+  font-size: 12px;
+  color: #888;
+}

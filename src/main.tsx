@@ -24,6 +24,7 @@ import {
 } from "@tanstack/react-table";
 import { fetchData, Person, DATA_COUNT } from "./fetchData";
 import "./index.css";
+import { styled } from "@mui/material";
 
 function App() {
   const PAGE_SIZE = 5;
@@ -113,6 +114,10 @@ function App() {
     debugTable: true,
   });
 
+  const StyledTableBody = styled("tbody")`
+    ${dataQuery.isFetching ? `opacity: .3; filter: grayscale(1)` : null}
+  `;
+
   return (
     <div className="app">
       <h1 className="title">Table with Back-End Pagination</h1>
@@ -145,7 +150,7 @@ function App() {
             </CellHeader>
           ))}
         </TableHeader>
-        <tbody>
+        <StyledTableBody>
           {table.getRowModel().rows.map((row) => {
             return (
               <TableRow key={row.id}>
@@ -190,7 +195,7 @@ function App() {
               </TableRow>
             );
           })}
-        </tbody>
+        </StyledTableBody>
       </Table>
       <div id="pagination-wrapper">
         <Pagination
@@ -207,7 +212,10 @@ function App() {
           truncateDropdown
         />
         {dataQuery.isFetching ? (
-          <Icon sdsIcon="loadingAnimated" sdsSize="l" sdsType="static" />
+          <div className="table-data-loading">
+            <Icon sdsIcon="loadingAnimated" sdsSize="l" sdsType="static" />
+            <small> Fetching Table Data ...</small>
+          </div>
         ) : null}
       </div>
     </div>
